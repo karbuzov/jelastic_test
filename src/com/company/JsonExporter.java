@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class JsonExporter {
 
@@ -15,10 +16,10 @@ public class JsonExporter {
         this.classNamesForExport = classNamesForExport;
     }
 
-    private boolean needToConvert(Class c) {
+    private boolean needToConvert(String classname) {
 
 //        System.out.println(c.getSimpleName() + " " + c.getName());
-        if (classNamesForExport.contains(c.getName())) {
+        if (classNamesForExport.contains(classname)) {
             return true;
         }
 
@@ -30,12 +31,12 @@ public class JsonExporter {
         Field[] declaredFields = rootClass.getDeclaredFields();
         for (Field field :declaredFields) {
 //            System.out.println(field.getName() + " " + field.getType().isSynthetic()+ " " + field.getType().isLocalClass()+ " " + field.getType().isMemberClass()+ " " + field.getType().isPrimitive());
-            if (!isCollection(field)) {
+            if (!isCollection(field.getType())) {
                 res += describeField(field);
             } else {
                 res += describeType(field);
             }
-            //            System.out.println09();
+//            System.out.println09();
 //            System.out.println();
         }
         return res + "\n}\n";
@@ -43,7 +44,7 @@ public class JsonExporter {
 
     private String describeField(Field field) {
         String res = "";
-        if (!needToConvert(field.getType())) {
+        if (!needToConvert(field.getType().getName())) {
             res += "\"" + field.getName() + "\": \"" + field.getType().getSimpleName() + "\"," +
                     "\n";
         } else {
@@ -52,24 +53,32 @@ public class JsonExporter {
         return res;
     }
     private String describeType(Field field) {
-        String res = "";
+        String res = "[";
 
         ParameterizedType pt = (ParameterizedType) field.getGenericType();
         for (Type type : pt.getActualTypeArguments()) {
-            if (!needToConvert(type.getClass())) {
-                res += "\"" + type.getTypeName() + "\": \"" + type.getTypeName() + "\"," +
-                        "\n";
+            Class tp = type.getClass();
+            if (!isCollection(tp)) {
+                if (!needToConvert(type.getTypeName())) {
+                    res += "\"" + type.getTypeName() + "\": \"22222222222222222222" + type.getTypeName() + "\"," +
+                            "\n";
+                } else {
+                    res += "\"" + type.getTypeName() + "\": 111111111111111 " + getClassDescription(type.getClass());
+                }
             } else {
-                res += "\"" + type.getTypeName() + "\": " + getClassDescription(type.getClass());
+                res += "###########";
             }
         }
 
-        return res;
+        return res + "]";
     }
 
 
-    private boolean isCollection(Field field){
-        if (Map.class.isAssignableFrom(field.getType())){
+    private boolean isCollection(Class<?> cls){
+        if (Map.class.isAssignableFrom(cls)){
+            return true;
+        }
+        if (Set.class.isAssignableFrom(cls)){
             return true;
         }
         return false;
