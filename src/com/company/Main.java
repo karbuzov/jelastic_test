@@ -11,14 +11,17 @@ public class Main {
 
         List<String> classesForExport = new ArrayList<>();
         classesForExport.add("com.company.RemouteFile");
-        classesForExport.add("java.util.Set<com.company.RemouteFile>");
 
         JsonExporter jsonExporter = new JsonExporter(classesForExport);
 
         Class<TestClass> rootClass = TestClass.class;
         String res = "";
 
-        res += jsonExporter.getClassDescription(rootClass);
+        try {
+            res += jsonExporter.getClassDescription(rootClass, null);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
         System.out.println(res);
     }

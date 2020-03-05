@@ -1,5 +1,6 @@
 package com.company;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -8,4 +9,5 @@ public class TestClass {
     private String error;
     private RemouteFile aaa;
     private Map<String, Set<RemouteFile>> keywords;
+    private List<String> bbbb;
 }
