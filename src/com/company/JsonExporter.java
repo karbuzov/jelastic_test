@@ -15,7 +15,7 @@ public class JsonExporter {
         this.classNamesForExport = classNamesForExport;
     }
 
-    private boolean needToConvert(Class<?> c) {
+    private boolean needToConvert(Class c) {
 
 //        System.out.println(c.getSimpleName() + " " + c.getName());
         if (classNamesForExport.contains(c.getName())) {
@@ -33,15 +33,9 @@ public class JsonExporter {
             if (!isCollection(field)) {
                 res += describeField(field);
             } else {
-                ParameterizedType pt = (ParameterizedType) field.getGenericType();
-                for (Type type : pt.getActualTypeArguments()) {
-                    needToConvert(type.getClass());
-                    res += describeType(type);
-//                "\"" + type.getTypeName() + "\": \"";
-//                    System.out.println(type.getTypeName());
-                }
+                res += describeType(field);
             }
-            //            System.out.println();
+            //            System.out.println09();
 //            System.out.println();
         }
         return res + "\n}\n";
@@ -53,19 +47,23 @@ public class JsonExporter {
             res += "\"" + field.getName() + "\": \"" + field.getType().getSimpleName() + "\"," +
                     "\n";
         } else {
-            res += "\"" + field.getName() + "\": " + getClassDescription(field.getClass());
+            res += "\"" + field.getName() + "\": " + getClassDescription(field.getType());
         }
         return res;
     }
-    private String describeType(Type type) {
+    private String describeType(Field field) {
         String res = "";
-//        "\"" + type.getTypeName() + "\": \"";
-        if (!needToConvert(type.getClass())) {
-            res += "\"" + type.getTypeName() + "\": \"" + type.getTypeName() + "\"," +
-                    "\n";
-        } else {
-            res += "\"" + type.getTypeName() + "\": " + getClassDescription(type.getClass());
+
+        ParameterizedType pt = (ParameterizedType) field.getGenericType();
+        for (Type type : pt.getActualTypeArguments()) {
+            if (!needToConvert(type.getClass())) {
+                res += "\"" + type.getTypeName() + "\": \"" + type.getTypeName() + "\"," +
+                        "\n";
+            } else {
+                res += "\"" + type.getTypeName() + "\": " + getClassDescription(type.getClass());
+            }
         }
+
         return res;
     }
 
