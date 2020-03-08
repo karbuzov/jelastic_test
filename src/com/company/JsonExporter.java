@@ -24,13 +24,14 @@ public class JsonExporter {
         return false;
     }
 
-    public String writeCollection(Class rootClass, Field field) throws ClassNotFoundException {
+    public String writeCollection(Class rootClass, Field field, ParameterizedType typeList) throws ClassNotFoundException {
 
         ParameterizedType pt = (ParameterizedType) field.getGenericType();
         Type[] types = pt.getActualTypeArguments();
         Class cls = (Class)types[0];
+        ParameterizedType valueType = (ParameterizedType)types[1];
 //        cls = (Class)((ParameterizedType)types[0]).getRawType();
-        String res = "\"" + field.getName() + "\": [" + getClassDescription(cls, field) + "]" ;
+        String res = "\"" + field.getName() + "\": [" + getClassDescription(cls, field, valueType) + "]" ;
 
 //        for (Type type : ) {
 
@@ -39,31 +40,39 @@ public class JsonExporter {
     }
 
 
-    public String writeMap(Class rootClass, Field field) throws ClassNotFoundException {
+    public String writeMap(Class rootClass, Field field, ParameterizedType typeList) throws ClassNotFoundException {
+
+        if (typeList != null) {
+            Type[] types = typeList.getActualTypeArguments();
+            ParameterizedType p = (ParameterizedType)types[1];
+            String keyDescr = getClassDescription(((Class)types[0]), field, null);
+            String valDescr = getClassDescription((Class)p.getActualTypeArguments()[0], field, null);
+
+            return "\"" + field.getName() + "\": [" + keyDescr + ":" + valDescr+ "]" ;
+        }
+
         ParameterizedType pt = (ParameterizedType) field.getGenericType();
         Type[] types = pt.getActualTypeArguments();
         Type keyType = types[0];
-        ParameterizedType valueType = (ParameterizedType)types[1];
 
-//        Class cls = (Class)(valueType);
+        ParameterizedType valueType = (ParameterizedType)types[1];
 
         Class cls = (Class)valueType.getRawType();
 
-        //        Class<?> clazz = Class.forName(valueType.getTypeName());
-        return "\"" + field.getName() + "\": [" + keyType.getTypeName()+ ":" + getClassDescription(cls, field)+ "]" ;
+        return "\"" + field.getName() + "\": [" + keyType.getTypeName()+ ":" + getClassDescription(cls, field, valueType)+ "]" ;
 
         //return "";
     }
 
 
-    public String getClassDescription(Class rootClass, Field field) throws ClassNotFoundException {
+    public String getClassDescription(Class rootClass, Field field, ParameterizedType types) throws ClassNotFoundException {
         String res = "";
 
         if (isCollection(rootClass)){
             if (isMap(rootClass)){
-                res += writeMap(rootClass, field);
+                res += writeMap(rootClass, field, types);
             } else {
-                res += writeCollection(rootClass, field);
+                res += writeCollection(rootClass, field, types);
             }
         } else {
             if (isPrimitive(rootClass)) {
@@ -72,7 +81,7 @@ public class JsonExporter {
                 res += "{";
                 Field[] declaredFields = rootClass.getDeclaredFields();
                 for (Field fieldInner :declaredFields) {
-                    res += "\""+ fieldInner.getName() +"\": "+"\""+getClassDescription(fieldInner.getType(), fieldInner)+ "\", ";
+                    res += "\""+ fieldInner.getName() +"\": "+"\""+getClassDescription(fieldInner.getType(), fieldInner, null)+ "\", ";
 
                 }
                 res += "}";

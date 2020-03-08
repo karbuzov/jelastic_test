@@ -18,7 +18,7 @@ public class Main {
         String res = "";
 
         try {
-            res += jsonExporter.getClassDescription(rootClass, null);
+            res += jsonExporter.getClassDescription(rootClass, null, null);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
