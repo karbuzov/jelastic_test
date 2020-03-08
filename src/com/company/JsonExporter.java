@@ -26,17 +26,22 @@ public class JsonExporter {
 
     public String writeCollection(Class rootClass, Field field, ParameterizedType typeList) throws ClassNotFoundException {
 
+        if (typeList != null) {
+            Type[] types = typeList.getActualTypeArguments();
+            String collectionDescr = getClassDescription(((Class)types[0]), field, null);
+
+            return  "[" + collectionDescr + "]" ;
+        }
+
         ParameterizedType pt = (ParameterizedType) field.getGenericType();
         Type[] types = pt.getActualTypeArguments();
+//        Type keyType = types[0];
+
+//        ParameterizedType valueType = (ParameterizedType)types[0];
+
         Class cls = (Class)types[0];
-        ParameterizedType valueType = (ParameterizedType)types[1];
-//        cls = (Class)((ParameterizedType)types[0]).getRawType();
-        String res = "\"" + field.getName() + "\": [" + getClassDescription(cls, field, valueType) + "]" ;
 
-//        for (Type type : ) {
-
-//        res += getClassDescription(rootClass);
-        return res;
+        return " [" + getClassDescription(cls, field, null)+ "]" ;
     }
 
 
@@ -48,7 +53,7 @@ public class JsonExporter {
             String keyDescr = getClassDescription(((Class)types[0]), field, null);
             String valDescr = getClassDescription((Class)p.getActualTypeArguments()[0], field, null);
 
-            return "\"" + field.getName() + "\": [" + keyDescr + ":" + valDescr+ "]" ;
+            return  "[" + keyDescr + ":" + valDescr+ "]" ;
         }
 
         ParameterizedType pt = (ParameterizedType) field.getGenericType();
@@ -59,7 +64,7 @@ public class JsonExporter {
 
         Class cls = (Class)valueType.getRawType();
 
-        return "\"" + field.getName() + "\": [" + keyType.getTypeName()+ ":" + getClassDescription(cls, field, valueType)+ "]" ;
+        return " [" + keyType.getTypeName()+ ":" + getClassDescription(cls, field, valueType)+ "]" ;
 
         //return "";
     }
