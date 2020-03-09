@@ -38,10 +38,15 @@ public class JsonExporter {
 //        Type keyType = types[0];
 
 //        ParameterizedType valueType = (ParameterizedType)types[0];
+        if (types.length > 1) {
+            ParameterizedType valueType = (ParameterizedType) types[0];
+            Class cls = (Class) valueType.getRawType();
 
-        Class cls = (Class)types[0];
+            return " [" + getClassDescription(cls, field, valueType) + "]";
+        } else {
+            return " [" + getClassDescription((Class)types[0], null, null) + "]";
+        }
 
-        return " [" + getClassDescription(cls, field, null)+ "]" ;
     }
 
 
