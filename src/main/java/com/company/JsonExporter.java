@@ -8,17 +8,49 @@ public class JsonExporter {
 
     private List<String> classNamesForExport = new ArrayList<>();
 
-    public JsonExporter(List<String> classNamesForExport) {
+    JsonExporter(List<String> classNamesForExport) {
         this.classNamesForExport = classNamesForExport;
     }
 
-    public String writeCollection(Class rootClass, Field field, ParameterizedType typeList) throws ClassNotFoundException {
+    public String getClassDescription(Class rootClass, Field field, ParameterizedType types) throws ClassNotFoundException {
+        StringBuilder res = new StringBuilder();
+
+        if (ClassUtils.isCollectionOrMap(rootClass)) {
+            if (ClassUtils.isMap(rootClass)) {
+                res.append(writeMap(field, types));
+            } else {
+                res.append(writeCollection(field, types));
+            }
+        } else {
+            if (ClassUtils.isPrimitive(rootClass)) {
+                res.append("\"" + JsonAsInMailFormatter.changeTypeDescription(rootClass.getTypeName()) + "\"");
+            } else {
+                formatCompoundObject(rootClass, res);
+            }
+        }
+
+        return res.toString();
+    }
+
+    private void formatCompoundObject(Class rootClass, StringBuilder res) throws ClassNotFoundException {
+        res.append("{");
+        Field[] declaredFields = rootClass.getDeclaredFields();
+        boolean firstTime = true;
+        for (Field fieldInner :declaredFields) {
+            String descr = "\""+ fieldInner.getName() +"\": " + getClassDescription(fieldInner.getType(), fieldInner, null);
+            res.append(firstTime ? descr : "," + descr);
+            firstTime = false;
+        }
+        res.append("}");
+    }
+
+    private String writeCollection(Field field, ParameterizedType typeList) throws ClassNotFoundException {
 
         if (typeList != null) {
             Type[] types = typeList.getActualTypeArguments();
             String collectionDescr = getClassDescription(((Class)types[0]), field, null);
 
-            return  "[" + collectionDescr + "]" ;
+            return  "[" + collectionDescr + JsonAsInMailFormatter.addCollectionMore() + "]" ;
         }
 
         ParameterizedType pt = (ParameterizedType) field.getGenericType();
@@ -30,17 +62,17 @@ public class JsonExporter {
             ParameterizedType valueType = (ParameterizedType)t;
             Class cls = (Class) valueType.getRawType();
 
-            return " [" + getClassDescription(cls, field, valueType) + "]";
+            return " [" + getClassDescription(cls, field, valueType) + JsonAsInMailFormatter.addCollectionMore() + "]";
         } else {
             Class cls = (Class) types[0];
 
             String valDescr = getClassDescription(cls, null, null);
-            return " [" + valDescr + "]";
+            return " [" + valDescr + JsonAsInMailFormatter.addCollectionMore() + "]";
         }
     }
 
 
-    public String writeMap(Class rootClass, Field field, ParameterizedType typeList) throws ClassNotFoundException {
+    private String writeMap(Field field, ParameterizedType typeList) throws ClassNotFoundException {
 
         if (typeList != null) {
             Type[] types = typeList.getActualTypeArguments();
@@ -48,7 +80,7 @@ public class JsonExporter {
             String keyDescr = getClassDescription(((Class)types[0]), field, null);
             String valDescr = getClassDescription((Class)p.getActualTypeArguments()[0], field, null);
 
-            return  "[{" + keyDescr + ":" + valDescr+ "}]" ;
+            return  "[{\"" + JsonAsInMailFormatter.changeTypeDescription(keyDescr) + "\":" + JsonAsInMailFormatter.changeTypeDescription(valDescr) + "}" + JsonAsInMailFormatter.addCollectionMore() + "]" ;
         }
 
         ParameterizedType pt = (ParameterizedType) field.getGenericType();
@@ -59,35 +91,7 @@ public class JsonExporter {
 
         Class cls = (Class)valueType.getRawType();
 
-        return "[{" + keyType.getTypeName()+ ":" + getClassDescription(cls, field, valueType)+ "}]" ;
+        return "[{\"" + JsonAsInMailFormatter.changeTypeDescription(keyType.getTypeName())+ "\":" + getClassDescription(cls, field, valueType)+ "}" + JsonAsInMailFormatter.addCollectionMore() + "]" ;
     }
 
-
-    public String getClassDescription(Class rootClass, Field field, ParameterizedType types) throws ClassNotFoundException {
-        String res = "";
-
-        if (ClassUtils.isCollectionOrMap(rootClass)) {
-            if (ClassUtils.isMap(rootClass)) {
-                res += writeMap(rootClass, field, types);
-            } else {
-                res += writeCollection(rootClass, field, types);
-            }
-        } else {
-            if (ClassUtils.isPrimitive(rootClass)) {
-                res += rootClass.getTypeName();
-            } else {
-                res += "{";
-                Field[] declaredFields = rootClass.getDeclaredFields();
-                boolean firstTime = true;
-                for (Field fieldInner :declaredFields) {
-                    String descr = "\""+ fieldInner.getName() +"\": "+"\""+getClassDescription(fieldInner.getType(), fieldInner, null)+ "\"";
-                    res += firstTime ? descr : "," + descr;
-                    firstTime = false;
-                }
-                res += "}";
-            }
-        }
-
-        return res;
-    }
 }

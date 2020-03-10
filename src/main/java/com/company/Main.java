@@ -1,5 +1,7 @@
 package com.company;
 
+import com.company.toJson.TestClass;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +12,7 @@ public class Main {
     public static void main(String[] args) {
 
         List<String> classesForExport = new ArrayList<>();
-        classesForExport.add("com.company.RemouteFile");
+        classesForExport.add("com.company.toJson.RemouteFile");
 
         JsonExporter jsonExporter = new JsonExporter(classesForExport);
 

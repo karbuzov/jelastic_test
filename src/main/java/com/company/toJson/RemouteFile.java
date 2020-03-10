@@ -1,8 +1,8 @@
-package com.company;
+package com.company.toJson;
 
 public class RemouteFile {
     private boolean isDirectory;
-    private String name;
     private String filePath;
+    private String name;
     private long size = -1;
 }
