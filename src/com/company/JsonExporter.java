@@ -35,16 +35,22 @@ public class JsonExporter {
 
         ParameterizedType pt = (ParameterizedType) field.getGenericType();
         Type[] types = pt.getActualTypeArguments();
-//        Type keyType = types[0];
+        Type t = types[0];
 
-//        ParameterizedType valueType = (ParameterizedType)types[0];
-        if (types.length > 1) {
-            ParameterizedType valueType = (ParameterizedType) types[0];
+
+//Type t = types[0];
+        if (!(t instanceof Class)) {
+//        if (isCollection((Class)valueType.getRawType())) {
+            ParameterizedType valueType = (ParameterizedType)t;
+//            ParameterizedType valueType = (ParameterizedType) types[0];
             Class cls = (Class) valueType.getRawType();
 
             return " [" + getClassDescription(cls, field, valueType) + "]";
         } else {
-            return " [" + getClassDescription((Class)types[0], null, null) + "]";
+            Class cls = (Class) types[0];
+
+            String valDescr = getClassDescription(cls, null, null);
+            return " [" + valDescr + "]";
         }
 
     }
