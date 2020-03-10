@@ -6,6 +6,8 @@ import java.util.Set;
 
 public class TestClass2 {
     private int result;
+    private Integer result2;
+    private Long longval;
     private RemouteFile aaa;
     private Map<String, Set<RemouteFile>> keywords;
     private String error;
