@@ -6,12 +6,6 @@ import java.util.List;
 
 public class JsonExporter {
 
-    private List<String> classNamesForExport = new ArrayList<>();
-
-    JsonExporter(List<String> classNamesForExport) {
-        this.classNamesForExport = classNamesForExport;
-    }
-
     public String getClassDescription(Class rootClass, Field field, ParameterizedType types) throws ClassNotFoundException {
         StringBuilder res = new StringBuilder();
 
